@@ -1,6 +1,9 @@
 from PIL import Image
 import sys
 
+ASCII = "`^\",:;Il!i~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$"
+CHARS = 65
+
 def getRGBs(image):
     """
     image is an image object from the PIL library
@@ -40,6 +43,24 @@ def getBrightness(image):
         valueArray.append(tempArray)
     return valueArray
 
+def imageToASCII(image):
+    """
+    image is an image object from the PIL Library
+
+    returns an array of ASCII characters that map to the image
+    """
+    brightness = getBrightness(image)
+    valueArray = []
+    height, width = image.size
+    divisor = 255 / CHARS
+    for y in range(height):
+        tempArray = []
+        for x in range(width):
+            asciiValue = round(brightness[y][x] / divisor) - 1
+            tempArray.append(ASCII[asciiValue])
+        valueArray.append(tempArray)
+    return valueArray
+
 def main():
     if len(sys.argv) == 2:
         try:
@@ -51,9 +72,11 @@ def main():
             print("Successfully constructed pixel matrix!")
             imageArray = getBrightness(im)
             print("Successfully constructed brightness matrix!")
+            imageArray = imageToASCII(im)
+            print("Successfully constructed ascii matrix!")
             for y in range(height):
                 for x in range(width):
-                    print(str(imageArray[y][x]) + " ", end = "")
+                    print(str(imageArray[y][x]) + str(imageArray[y][x]) + str(imageArray[y][x]), end = "")
                 print("")
         except Exception as ex:
             print(ex)
