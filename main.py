@@ -24,9 +24,13 @@ def getRGBs(image):
         valuesArray.append(tempArray)
     return valuesArray
 
-def getBrightness(image):
+def getBrightness(image, processing = 0):
     """
     image is an image object from the PIL library
+    processing is the method of calculating the brightness
+    0 = Average
+    1 = Lightness: ((max(R,G,B) + min(R,G,B)) / 2)
+    2 = Luminosity: 0.21R + 0.72G + 0.07B
 
     returns the two dimensional array of the brightness for pixel in the image
     """
@@ -40,20 +44,27 @@ def getBrightness(image):
         for x in range(width):
             total = 0
             average = 0
-            for value in rgbArray[y][x]:
-                total += value
-            average = round(total /  3)
+            if(processing == 0):
+                for value in rgbArray[y][x]:
+                    total += value
+                average = round(total /  3)
+            elif(processing == 1):
+                average = round((max(rgbArray[y][x]) + min(rgbArray[y][x])) / 2)
+            elif(processing == 2):
+                average = round((0.21 * rgbArray[y][x][0]) + (0.72 * rgbArray[y][x][1]) + (0.07 * rgbArray[y][x][2]))
+            else:
+                raise ValueError("That isn't a value for processing: try 0 - 2")
             tempArray.append(average)
         valueArray.append(tempArray)
     return valueArray
 
-def imageToASCII(image):
+def imageToASCII(image, processing = 0):
     """
     image is an image object from the PIL Library
 
     returns an array of ASCII characters that map to the image
     """
-    brightness = getBrightness(image)
+    brightness = getBrightness(image, processing)
     valueArray = []
     width, height = image.size
     divisor = 255 / CHARS
@@ -87,16 +98,20 @@ def scaleImage(image):
 
 
 def main():
-    if len(sys.argv) == 2:
+    if len(sys.argv) >= 2:
         try:
             im = Image.open(sys.argv[1])
+            if(len(sys.argv) > 2):
+                processing = int(sys.argv[2])
+            else:
+                processing = 0
             print("Successfully loaded image!")
             width, height = im.size
             print("Image size: " + str(height) + " x " + str(width))
             im = scaleImage(im)
             width, height = im.size
             print("Scaled size to: " + str(height) + " x " + str(width))
-            imageArray = imageToASCII(im)
+            imageArray = imageToASCII(im, processing)
             print("Successfully constructed ascii matrix!")
             for y in range(height):
                 for x in range(width):
@@ -104,8 +119,6 @@ def main():
                 print("")
         except Exception as ex:
             print(ex)
-    elif len(sys.argv) > 2:
-        print("Please only enter one image name")
     else:
         print("Please pass the name of the image as an arguement.")
 
