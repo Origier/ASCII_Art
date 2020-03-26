@@ -2,7 +2,9 @@ from PIL import Image
 import sys
 
 ASCII = "`^\",:;Il!i~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$"
-CHARS = 65
+CHARS = len(ASCII)
+TERMINAL_WIDTH = 155
+TERMINAL_HEIGHT = 80
 
 def getRGBs(image):
     """
@@ -11,7 +13,7 @@ def getRGBs(image):
     returns the two dimensional array of RGB's for each pixel in the image
     """
     values = list(image.getdata())
-    height, width = image.size
+    width, height = image.size
     valuesArray = []
     counter = 0
     for y in range(height):
@@ -29,7 +31,9 @@ def getBrightness(image):
     returns the two dimensional array of the brightness for pixel in the image
     """
     rgbArray = getRGBs(image)
-    height, width = image.size
+    if(type(rgbArray[0][0]) == int):
+        return rgbArray
+    width, height = image.size
     valueArray = []
     for y in range(height):
         tempArray = []
@@ -51,7 +55,7 @@ def imageToASCII(image):
     """
     brightness = getBrightness(image)
     valueArray = []
-    height, width = image.size
+    width, height = image.size
     divisor = 255 / CHARS
     for y in range(height):
         tempArray = []
@@ -61,22 +65,42 @@ def imageToASCII(image):
         valueArray.append(tempArray)
     return valueArray
 
+def scaleImage(image):
+    """
+    image is an image object from the PIL Library
+
+    returns an image that fits the size of the terminal
+    """
+    width, height = image.size
+    while(True):
+        if(height > TERMINAL_HEIGHT):
+            divisor = height / TERMINAL_HEIGHT
+            height = round(height / divisor)
+            width = round(width / divisor)
+        elif(width > TERMINAL_WIDTH):
+            divisor = width / TERMINAL_WIDTH
+            width = round(width / divisor)
+            height = round(height / divisor)
+        else:
+            break
+    return image.resize((width, height))
+
+
 def main():
     if len(sys.argv) == 2:
         try:
             im = Image.open(sys.argv[1])
             print("Successfully loaded image!")
-            height, width = im.size
+            width, height = im.size
             print("Image size: " + str(height) + " x " + str(width))
-            imageArray = getRGBs(im)
-            print("Successfully constructed pixel matrix!")
-            imageArray = getBrightness(im)
-            print("Successfully constructed brightness matrix!")
+            im = scaleImage(im)
+            width, height = im.size
+            print("Scaled size to: " + str(height) + " x " + str(width))
             imageArray = imageToASCII(im)
             print("Successfully constructed ascii matrix!")
             for y in range(height):
                 for x in range(width):
-                    print(str(imageArray[y][x]) + str(imageArray[y][x]) + str(imageArray[y][x]), end = "")
+                    print(str(imageArray[y][x]) + str(imageArray[y][x]), end = "")
                 print("")
         except Exception as ex:
             print(ex)
