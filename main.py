@@ -24,13 +24,15 @@ def getRGBs(image):
         valuesArray.append(tempArray)
     return valuesArray
 
-def getBrightness(image, processing = 0):
+def getBrightness(image, processing = 0, invert = 0):
     """
     image is an image object from the PIL library
     processing is the method of calculating the brightness
     0 = Average
     1 = Lightness: ((max(R,G,B) + min(R,G,B)) / 2)
     2 = Luminosity: 0.21R + 0.72G + 0.07B
+
+    invert is a boolean for determining to invert the brightness or not
 
     returns the two dimensional array of the brightness for pixel in the image
     """
@@ -54,25 +56,32 @@ def getBrightness(image, processing = 0):
                 average = round((0.21 * rgbArray[y][x][0]) + (0.72 * rgbArray[y][x][1]) + (0.07 * rgbArray[y][x][2]))
             else:
                 raise ValueError("That isn't a value for processing: try 0 - 2")
+            if(invert):
+                average = (average - 255) * -1
+            elif(invert > 1):
+                raise ValueError("That isn't a boolean value")
             tempArray.append(average)
         valueArray.append(tempArray)
     return valueArray
 
-def imageToASCII(image, processing = 0):
+def imageToASCII(image, processing = 0, invert = 0):
     """
     image is an image object from the PIL Library
 
     returns an array of ASCII characters that map to the image
     """
-    brightness = getBrightness(image, processing)
+    brightness = getBrightness(image, processing, invert)
     valueArray = []
     width, height = image.size
     divisor = 255 / CHARS
     for y in range(height):
         tempArray = []
         for x in range(width):
-            asciiValue = round(brightness[y][x] / divisor) - 1
-            tempArray.append(ASCII[asciiValue])
+            if(brightness[y][x] == 0):
+                tempArray.append(" ")
+            else:
+                asciiValue = round(brightness[y][x] / divisor) - 1
+                tempArray.append(ASCII[asciiValue])
         valueArray.append(tempArray)
     return valueArray
 
@@ -105,13 +114,17 @@ def main():
                 processing = int(sys.argv[2])
             else:
                 processing = 0
+            if(len(sys.argv) > 3):
+                invert = int(sys.argv[3])
+            else:
+                invert = 0
             print("Successfully loaded image!")
             width, height = im.size
             print("Image size: " + str(height) + " x " + str(width))
             im = scaleImage(im)
             width, height = im.size
             print("Scaled size to: " + str(height) + " x " + str(width))
-            imageArray = imageToASCII(im, processing)
+            imageArray = imageToASCII(im, processing, invert)
             print("Successfully constructed ascii matrix!")
             for y in range(height):
                 for x in range(width):
