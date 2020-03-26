@@ -1,6 +1,14 @@
 from PIL import Image
 import sys
 
+"""
+This script is only compatibile with python 3
+use the script in your terminal as so: python3 main.py <image_name> <brightness_processing[0, 1, 2]> <invert[0,1]>
+
+ASCII is the set of chars that the image will be mapped to
+TERMINAL_WIDTH and TERMINAL_HEIGHT might be different on your system, adjust these numbers to get the result desired
+"""
+
 ASCII = "`^\",:;Il!i~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$"
 CHARS = len(ASCII)
 TERMINAL_WIDTH = 155
@@ -58,8 +66,6 @@ def getBrightness(image, processing = 0, invert = 0):
                 raise ValueError("That isn't a value for processing: try 0 - 2")
             if(invert):
                 average = (average - 255) * -1
-            elif(invert > 1):
-                raise ValueError("That isn't a boolean value")
             tempArray.append(average)
         valueArray.append(tempArray)
     return valueArray
@@ -109,7 +115,6 @@ def scaleImage(image):
 def main():
     if len(sys.argv) >= 2:
         try:
-            im = Image.open(sys.argv[1])
             if(len(sys.argv) > 2):
                 processing = int(sys.argv[2])
             else:
@@ -118,6 +123,7 @@ def main():
                 invert = int(sys.argv[3])
             else:
                 invert = 0
+            im = Image.open(sys.argv[1])
             print("Successfully loaded image!")
             width, height = im.size
             print("Image size: " + str(height) + " x " + str(width))
